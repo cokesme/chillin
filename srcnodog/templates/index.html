@@ -1,0 +1,28 @@
+{% macro src(org, project) -%}
+    <div><a href=https://sourcegraph.com/github.com/{{org}}/{{project}}>{{project}}</a></div>
+{%- endmacro %}
+<div>
+{{ src("angr", "angr") }}
+{{ src("php", "php-src") }}
+</div>
+{% if sites %}
+<h1> Build a query </h1>
+{% macro site_form(site) -%}
+    <form method=GET action={{site.path}}>
+    {{ site.url }}
+    {% for i in site.args %}
+    /<input type=text name={{ i }}>
+    {% endfor %}
+    <input type=submit value="Run">
+    </form>
+{%- endmacro %}
+<div>
+<ul>
+{% for site in sites %}
+<li>
+{{ site_form(site) }}
+</li>
+{% endfor %}
+</ul>
+<div>
+{% endif %}
