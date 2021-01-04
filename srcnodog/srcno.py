@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, abort, after_this_request
 from urllib.parse import urlparse
 import os
 import re
@@ -89,8 +89,12 @@ def parse_sites():
 def on_demand():
     # Use the matched url_rule to find the matching site 'route'
     site = app.config['sites'][request.url_rule.endpoint]
-    togo = site.redir(list(request.args.values())[:len(site.args)])
-    return redirect(togo, code=302)
+    # We only care if they sent less
+    try:
+        togo = site.redir(list(request.args.values()))
+        return redirect(togo, code=302)
+    except:
+        abort(404)
 
 on_demand.methods = ['GET']
 
@@ -110,6 +114,11 @@ def src():
         </form>
     {%- endmacro %}
     '''
+    @after_this_request
+    def no_embed(response):
+        response.headers['X-Frame-Options'] = 'DENY'
+        return response
+
     return render_template('./index.html', sites=app.config['sites'].values())
 
 @app.route('/<string:org>/<string:repo>')
